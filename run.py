@@ -19,7 +19,7 @@ cwd = os.getcwd()
 
 opts = webdriver.ChromeOptions()
 
-opts.headless = True
+opts.headless = False
 opts.add_argument('log-level=3') 
 dc = DesiredCapabilities.CHROME
 dc['loggingPrefs'] = {'driver': 'OFF', 'server': 'OFF', 'browser': 'OFF'}
@@ -62,52 +62,55 @@ def job(notifer):
         urls_list.append(country.get_attribute('href'))
  
     for url in urls_list:
-        get_code_country = url.split(".console")[0].replace("https://","")
-        
-        if any(f'{get_code_country}' in s for s in blacklist): 
-            pass
-        else:
-            for repeat in range(0,totalrepeat):
-                browser.get(url)
-                xpath_el('//label[@data-value="code_editor"]')
-                xpath_el('//button[@id="glue__job-create-btn"]')
+        try:
+            get_code_country = url.split(".console")[0].replace("https://","")
             
-                script_el = wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '//textarea[@class="ace_text-input"]')))
-                script_el.send_keys(Keys.CONTROL, 'a')
-                script_el.send_keys(Keys.BACKSPACE)
-                for part in script.split('\n'):
-                    script_el.send_keys(part)
-                    sleep(0.5)
-                    ActionChains(browser).key_down(Keys.SHIFT).key_down(Keys.ENTER).key_up(Keys.SHIFT).key_up(Keys.ENTER).perform()
+            if any(f'{get_code_country}' in s for s in blacklist): 
+                pass
+            else:
+                for repeat in range(0,totalrepeat):
+                    browser.get(url)
+                    xpath_el('//label[@data-value="code_editor"]')
+                    xpath_el('//button[@id="glue__job-create-btn"]')
+                
+                    script_el = wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '//textarea[@class="ace_text-input"]')))
+                    script_el.send_keys(Keys.CONTROL, 'a')
+                    script_el.send_keys(Keys.BACKSPACE)
+                    for part in script.split('\n'):
+                        script_el.send_keys(part)
+                        sleep(0.5)
+                        ActionChains(browser).key_down(Keys.SHIFT).key_down(Keys.ENTER).key_up(Keys.SHIFT).key_up(Keys.ENTER).perform()
+                        sleep(0.2)
+                    
+                    xpath_el('//a[@data-testid="details"]')
                     sleep(0.2)
+                    xpath_type('(//input[@class="awsui-input awsui-input-type-text awsui-input-valid"])[1]',email+str(random.randint(10000,100000)))
+                    sleep(0.2)
+                    role = wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '(//awsui-select-trigger)[1]')))
+                    role.click()
+                    sleep(0.2)
+                    browser.execute_script("arguments[0].scrollIntoView();", role)
+                    wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '(//li[@class="awsui-select-dropdown-option awsui-select-dropdown-option-selectable"])[1]'))).click()
+                    
+                    sleep(0.2)
+                    wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '//div[@data-value="G.1X"]'))).click()
+                    sleep(0.2)
+                    wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '//div[@data-value="G.2X"]'))).click()
+                    sleep(0.2)
+                    xpath_type('(//input[contains(@id,"number-input")])[3]',1000000)
+                    sleep(0.2)
+                    xpath_el('(//button[@class="awsui-button awsui-button-variant-normal awsui-hover-child-icons"])[1]')
+                    sleep(1)
+                    assertion1 = wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '//div[@class="awsui-flash-header"]'))).text
+                    print(f"[{time.strftime('%d-%m-%y %X')}] {get_code_country} | {assertion1}!")
+                    sleep(1)
+                    xpath_el('//button[@class="awsui-button awsui-button-variant-primary awsui-hover-child-icons"]')
+                    sleep(1)
+                    assertion2 = wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '//div[@class="awsui-flash-header"]'))).text 
+                    print(f"[{time.strftime('%d-%m-%y %X')}] {get_code_country} | {assertion2}!")
+        except:
+            print(f"[{time.strftime('%d-%m-%y %X')}] {get_code_country} Passing!")
                 
-                xpath_el('//a[@data-testid="details"]')
-                sleep(0.2)
-                xpath_type('(//input[@class="awsui-input awsui-input-type-text awsui-input-valid"])[1]',email+str(random.randint(10000,100000)))
-                sleep(0.2)
-                role = wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '(//awsui-select-trigger)[1]')))
-                role.click()
-                sleep(0.2)
-                browser.execute_script("arguments[0].scrollIntoView();", role)
-                wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '(//li[@class="awsui-select-dropdown-option awsui-select-dropdown-option-selectable"])[1]'))).click()
-                
-                sleep(0.2)
-                wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '//div[@data-value="G.1X"]'))).click()
-                sleep(0.2)
-                wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '//div[@data-value="G.2X"]'))).click()
-                sleep(0.2)
-                xpath_type('(//input[contains(@id,"number-input")])[3]',1000000)
-                sleep(0.2)
-                xpath_el('(//button[@class="awsui-button awsui-button-variant-normal awsui-hover-child-icons"])[1]')
-                sleep(1)
-                assertion1 = wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '//div[@class="awsui-flash-header"]'))).text
-                print(f"[{time.strftime('%d-%m-%y %X')}] {get_code_country} | {assertion1}!")
-                sleep(1)
-                xpath_el('//button[@class="awsui-button awsui-button-variant-primary awsui-hover-child-icons"]')
-                sleep(1)
-                assertion2 = wait(browser,10).until(EC.presence_of_element_located((By.XPATH, '//div[@class="awsui-flash-header"]'))).text 
-                print(f"[{time.strftime('%d-%m-%y %X')}] {get_code_country} | {assertion2}!")
-             
 def open_browser(k):
     
     global browser
